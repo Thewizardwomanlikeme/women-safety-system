@@ -1,0 +1,44 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+build/
+dist/
+*.apk
+*.aab
+
+# Android
+android-app/.gradle/
+android-app/app/build/
+android-app/local.properties
+android-app/.idea/
+android-app/*.iml
+
+# ESP32
+esp32-firmware/.pio/
+esp32-firmware/.pioenvs/
+esp32-firmware/.piolibdeps/
+esp32-firmware/build/
+
+# Logs
+*.log
+logs/
