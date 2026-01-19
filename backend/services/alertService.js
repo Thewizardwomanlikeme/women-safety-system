@@ -1,20 +1,21 @@
 /**
  * Women Safety System - Alert Service
- * Handles SMS and phone call alerts via Twilio
+ * Handles SMS and phone call alerts via CPaaS providers
  */
 
-const twilio = require('twilio');
+const ProviderFactory = require('./providers/ProviderFactory');
 const config = require('../config/config');
 
 class AlertService {
     constructor() {
-        this.client = null;
+        this.provider = null;
 
-        if (config.twilio.accountSid && config.twilio.authToken) {
-            this.client = twilio(config.twilio.accountSid, config.twilio.authToken);
-            console.log('Twilio client initialized');
-        } else {
-            console.warn('Twilio credentials not configured - alerts will be simulated');
+        try {
+            this.provider = ProviderFactory.createProvider(config.cpaas);
+            console.log(`CPaaS provider initialized: ${this.provider.getProviderName()}`);
+        } catch (error) {
+            console.warn(`CPaaS provider initialization failed: ${error.message}`);
+            console.warn('Alerts will be simulated');
         }
     }
 
@@ -75,25 +76,22 @@ class AlertService {
             `Battery: ${incident.batteryLevel}%\n\n` +
             `This is an automated emergency alert. Please respond immediately.`;
 
-        if (!this.client) {
+        if (!this.provider) {
             console.log(`[SIMULATED] SMS to ${phoneNumber}: ${message}`);
             return { contact: phoneNumber, success: true, simulated: true };
         }
 
         try {
-            const result = await this.client.messages.create({
-                body: message,
-                from: config.twilio.phoneNumber,
-                to: phoneNumber
-            });
+            const result = await this.provider.sendSMS(phoneNumber, message);
 
-            console.log(`SMS sent to ${phoneNumber}: ${result.sid}`);
+            console.log(`SMS sent to ${phoneNumber}:`, result);
 
             return {
                 contact: phoneNumber,
                 success: true,
-                sid: result.sid,
-                status: result.status
+                sid: result.messageId,
+                status: result.status,
+                provider: result.provider
             };
 
         } catch (error) {
@@ -110,44 +108,34 @@ class AlertService {
             ? `Latitude ${incident.latitude}, Longitude ${incident.longitude}`
             : 'Location not available';
 
-        // TwiML for voice message
-        const twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-                <Say voice="alice">
-                    Emergency Alert! This is an automated safety alert. 
-                    An emergency has been triggered from device ${incident.deviceId}. 
-                    ${location}. 
-                    Battery level is ${incident.batteryLevel} percent. 
-                    Please respond immediately. 
-                    This message will repeat.
-                </Say>
-                <Say voice="alice">
-                    Emergency Alert! This is an automated safety alert. 
-                    An emergency has been triggered. 
-                    Please respond immediately.
-                </Say>
-            </Response>`;
+        // Voice message text
+        const voiceMessage = `Emergency Alert! This is an automated safety alert. ` +
+            `An emergency has been triggered from device ${incident.deviceId}. ` +
+            `${location}. ` +
+            `Battery level is ${incident.batteryLevel} percent. ` +
+            `Please respond immediately. ` +
+            `This message will repeat. ` +
+            `Emergency Alert! This is an automated safety alert. ` +
+            `An emergency has been triggered. ` +
+            `Please respond immediately.`;
 
-        if (!this.client) {
+        if (!this.provider) {
             console.log(`[SIMULATED] Call to ${phoneNumber}`);
             return { contact: phoneNumber, success: true, simulated: true };
         }
 
         try {
-            const result = await this.client.calls.create({
-                twiml: twiml,
-                from: config.twilio.phoneNumber,
-                to: phoneNumber,
-                timeout: config.alerts.callDurationSeconds
-            });
+            const result = await this.provider.makeVoiceCall(phoneNumber, voiceMessage);
 
-            console.log(`Call initiated to ${phoneNumber}: ${result.sid}`);
+            console.log(`Call initiated to ${phoneNumber}:`, result);
 
             return {
                 contact: phoneNumber,
                 success: true,
-                sid: result.sid,
-                status: result.status
+                sid: result.callId,
+                status: result.status,
+                provider: result.provider,
+                simulated: result.simulated || false
             };
 
         } catch (error) {

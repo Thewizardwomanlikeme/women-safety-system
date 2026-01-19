@@ -13,11 +13,33 @@ module.exports = {
         ? process.env.CORS_ORIGINS.split(',')
         : ['*'],
 
-    // Twilio configuration (SMS & Calls)
-    twilio: {
-        accountSid: process.env.TWILIO_ACCOUNT_SID,
-        authToken: process.env.TWILIO_AUTH_TOKEN,
-        phoneNumber: process.env.TWILIO_PHONE_NUMBER
+    // CPaaS Provider Configuration (replaces Twilio)
+    cpaas: {
+        // Provider selection: 'msg91', 'exotel', or 'gupshup'
+        provider: process.env.CPAAS_PROVIDER || 'msg91',
+
+        // MSG91 Configuration
+        msg91: {
+            authKey: process.env.MSG91_AUTH_KEY,
+            senderId: process.env.MSG91_SENDER_ID,
+            templateId: process.env.MSG91_TEMPLATE_ID // Optional
+        },
+
+        // Exotel Configuration
+        exotel: {
+            accountSid: process.env.EXOTEL_ACCOUNT_SID,
+            apiKey: process.env.EXOTEL_API_KEY,
+            apiToken: process.env.EXOTEL_API_TOKEN,
+            exoPhone: process.env.EXOTEL_PHONE_NUMBER,
+            flowUrl: process.env.EXOTEL_FLOW_URL // Optional, for voice calls
+        },
+
+        // Gupshup Configuration
+        gupshup: {
+            userId: process.env.GUPSHUP_USER_ID,
+            password: process.env.GUPSHUP_PASSWORD,
+            source: process.env.GUPSHUP_SOURCE || 'GSDSMS' // India-specific
+        }
     },
 
     // Database configuration (MongoDB)
