@@ -8,7 +8,7 @@ This system provides a reliable emergency alert mechanism for women's safety:
 
 - **Hardware**: ESP32 with physical emergency button and LoRa communication
 - **Mobile**: Android app for receiving alerts and GPS tracking
-- **Backend**: Node.js server for SMS/call delivery via Twilio
+- **Backend**: Node.js server for SMS/call delivery via Indian CPaaS providers (MSG91, Gupshup, Exotel)
 
 ## ✨ Key Features
 
@@ -25,8 +25,8 @@ This system provides a reliable emergency alert mechanism for women's safety:
 graph LR
     A[ESP32 + Button] -->|LoRa| B[Android Phone]
     B -->|GPS + API| C[Node.js Backend]
-    C -->|Twilio| D[SMS Alerts]
-    C -->|Twilio| E[Voice Calls]
+    C -->|MSG91/Gupshup/Exotel| D[SMS Alerts]
+    C -->|MSG91/Exotel| E[Voice Calls]
     C -->|Database| F[Incident Logs]
 ```
 
@@ -55,8 +55,12 @@ graph LR
 │   ├── routes/
 │   │   └── emergency.js   # API endpoints
 │   ├── services/
-│   │   ├── alertService.js    # Twilio SMS/calls
-│   │   └── incidentLogger.js  # Database operations
+│   │   ├── alertService.js    # SMS/call delivery
+│   │   ├── incidentLogger.js  # Database operations
+│   │   └── providers/         # CPaaS provider abstraction
+│   │       ├── MSG91Provider.js
+│   │       ├── GupshupProvider.js
+│   │       └── ExotelProvider.js
 │   ├── models/
 │   │   └── Incident.js    # MongoDB schema
 │   └── package.json
@@ -91,7 +95,7 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 cd backend
 npm install
 cp .env.example .env
-# Edit .env with Twilio credentials
+# Edit .env with CPaaS provider credentials (MSG91/Gupshup/Exotel)
 npm start
 ```
 
@@ -109,7 +113,7 @@ npm start
 
 - **ESP32 Firmware**: C/C++, PlatformIO/Arduino IDE
 - **Android App**: Java, Android Studio, API 24+
-- **Backend**: Node.js 16+, Express, Twilio
+- **Backend**: Node.js 16+, Express, Indian CPaaS providers
 
 ## 🔧 Configuration
 
@@ -129,9 +133,24 @@ npm start
 ### Backend (`.env`)
 
 ```bash
-TWILIO_ACCOUNT_SID=your_sid
-TWILIO_AUTH_TOKEN=your_token
-TWILIO_PHONE_NUMBER=+1234567890
+# CPaaS Provider Configuration
+CPAAS_PROVIDER=MSG91              # Options: MSG91, Gupshup, Exotel
+
+# MSG91 (Default - Supports SMS + Voice)
+MSG91_AUTH_KEY=your_auth_key
+MSG91_SENDER_ID=your_sender_id
+MSG91_FLOW_ID=your_flow_id        # For voice calls
+
+# Gupshup (SMS only)
+GUPSHUP_USER_ID=your_user_id
+GUPSHUP_PASSWORD=your_password
+GUPSHUP_SOURCE=your_source
+
+# Exotel (SMS + Voice)
+EXOTEL_ACCOUNT_SID=your_account_sid
+EXOTEL_API_KEY=your_api_key
+EXOTEL_API_TOKEN=your_api_token
+EXOTEL_CALLER_ID=your_caller_id
 ```
 
 ## 📖 Documentation
@@ -148,7 +167,7 @@ TWILIO_PHONE_NUMBER=+1234567890
 3. **LoRa Packet** → ESP32 sends emergency packet
 4. **Android Receives** → Parses packet, gets GPS
 5. **Backend API** → Creates incident, sends alerts
-6. **Twilio** → Delivers SMS and voice calls
+6. **CPaaS Provider** → Delivers SMS and voice calls via MSG91/Gupshup/Exotel
 7. **Response Time** → ~7-30 seconds end-to-end
 
 ## 🧪 Testing
@@ -177,7 +196,7 @@ pm2 logs women-safety
 - ✅ Validate all inputs server-side
 - ✅ Rate limit API endpoints
 - ✅ Use HTTPS for all communications
-- ✅ Secure Twilio credentials
+- ✅ Secure CPaaS provider credentials (use environment variables)
 
 
 ## 🐛 Troubleshooting
@@ -193,9 +212,10 @@ pm2 logs women-safety
 - System works with (0,0) if GPS fails
 
 **Alerts not sent:**
-- Verify Twilio credentials
-- Check account balance
-- Ensure E.164 phone format (+1234567890)
+- Verify CPaaS provider credentials (MSG91/Gupshup/Exotel)
+- Check account balance/credits
+- Ensure phone numbers include country code (e.g., +91 for India)
+- Check provider-specific documentation
 
 ## 📝 License
 
@@ -208,7 +228,7 @@ This is a safety-critical system. Pull requests welcome for:
 - Bug fixes
 - Documentation improvements
 - Performance optimizations
-- Additional SMS/call providers
+- Additional CPaaS providers (currently supports MSG91, Gupshup, Exotel)
 
 ## ⚠️ Disclaimer
 

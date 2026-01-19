@@ -11,7 +11,7 @@ sequenceDiagram
     participant LoRa
     participant Android
     participant Backend
-    participant Twilio
+    participant CPaaS as CPaaS Provider
     participant Contacts
 
     User->>ESP32: Press Emergency Button
@@ -33,10 +33,11 @@ sequenceDiagram
         Backend->>Backend: Create incident
         Backend->>Backend: Log to database
         Backend-->>Android: 201 Created
-        Backend->>Twilio: Send SMS to contacts
-        Backend->>Twilio: Initiate phone calls
-        Twilio->>Contacts: SMS alerts
-        Twilio->>Contacts: Voice calls
+        Backend->>CPaaS: Send SMS to contacts
+        Backend->>CPaaS: Initiate phone calls
+        Note over CPaaS: MSG91/Gupshup/Exotel
+        CPaaS->>Contacts: SMS alerts
+        CPaaS->>Contacts: Voice calls
         Contacts->>Contacts: Receive alerts
     end
 ```
@@ -169,7 +170,7 @@ sequenceDiagram
      - Initiate phone call
    - Continue in background
 
-### Phase 5: Alert Delivery (Twilio)
+### Phase 5: Alert Delivery (CPaaS Provider)
 
 1. **SMS Alert**
    ```
@@ -186,7 +187,7 @@ sequenceDiagram
    ```
 
 2. **Phone Call Alert**
-   - TwiML voice message:
+   - Automated voice message:
    ```
    "Emergency Alert! This is an automated safety alert. 
    An emergency has been triggered from device 1. 
@@ -196,12 +197,14 @@ sequenceDiagram
    ```
    - Message repeats twice
    - Call duration: 30 seconds
+   - Supported by MSG91 and Exotel (Gupshup primarily supports SMS)
 
 3. **Alert Status Tracking**
-   - Record SMS/call SIDs from Twilio
+   - Record SMS/call IDs from CPaaS provider
    - Update incident status to "alerts_sent"
    - Calculate response time
    - Store in incident metadata
+   - Provider name logged for debugging
 
 ## Failure Handling
 
@@ -214,11 +217,12 @@ sequenceDiagram
 - If retry fails → Show local notification
 - Keep incident in local queue for later sync
 
-**Backend → Twilio connectivity lost:**
+**Backend → CPaaS Provider connectivity lost:**
 - Alert service catches exception
 - Mark incident status as "alert_failed"
 - Log error details
 - Can be retried manually or automatically
+- Consider fallback to alternate provider
 
 ### Hardware Failures
 
