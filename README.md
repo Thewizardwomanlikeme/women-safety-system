@@ -182,13 +182,6 @@ pm2 logs women-safety
 - ✅ Use HTTPS for all communications
 - ✅ Secure Twilio credentials
 
-## 📊 Scaling
-
-| Units | Hardware Cost | Backend Cost/Month |
-|-------|--------------|-------------------|
-| 10 | $300-550 | $10-15 |
-| 100 | $3,000-4,000 | $20-30 |
-| 1,000 | $25,000-35,000 | $50-100 |
 
 ## 🐛 Troubleshooting
 
