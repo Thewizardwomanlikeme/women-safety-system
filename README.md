@@ -16,7 +16,7 @@ This system provides a reliable emergency alert mechanism for women's safety:
 - ✅ **LoRa Communication** - Works without cellular/Wi-Fi
 - ✅ **Automatic GPS Location** - Shares location with emergency contacts
 - ✅ **SMS & Voice Calls** - Multi-channel alert delivery
-- ✅ **Low Cost** - ~$30-55 per unit
+- ✅ **Low Cost** - 
 - ✅ **Offline Capable** - LoRa works in low-network environments
 
 ## 🏗️ System Architecture
@@ -99,13 +99,11 @@ npm start
 
 ### Hardware
 
-- **ESP32** development board ($5-10)
-- **SX1276 LoRa module** ($3-8)
-- **Emergency button** ($1-2)
-- **USB LoRa adapter** for Android ($15-30)
+- **ESP32** development board
+- **SX1276 LoRa module**
+- **Emergency button**
+- **USB LoRa adapter** for Android
 - *Optional*: Battery, enclosure
-
-**Total Cost:** ~$30-55 per unit
 
 ### Software
 
@@ -119,8 +117,7 @@ npm start
 
 ```c
 #define DEVICE_ID           0x0001    // Unique per device
-#define LORA_FREQUENCY      868E6     // 868MHz (EU) or 915MHz (US)
-```
+#define LORA_FREQUENCY      865E6   // 865 MHz for India (use within 865–867 MHz band)
 
 ### Android App
 
